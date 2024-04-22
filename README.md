@@ -1,4 +1,4 @@
-# geniepals
+# GeniePals
 
 A new Flutter project.
 
