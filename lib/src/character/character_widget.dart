@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:geniepals/src/character/character.dart';
-import 'package:geniepals/src/character/character_details_view.dart';
+import 'package:geniepals/src/character/character_chat_screen.dart';
 
-class CharacterView extends StatelessWidget {
-  const CharacterView(
+class CharacterWidget extends StatelessWidget {
+  const CharacterWidget(
       {super.key,
       required this.character,
       required this.pageController,
@@ -22,7 +22,7 @@ class CharacterView extends StatelessWidget {
         // background, the navigation stack is restored.
         Navigator.restorablePushNamed(
           context,
-          CharacterDetailsView.routeName,
+          CharacterChatScreen.routeName,
           arguments: character.id,
         );
       },
@@ -38,10 +38,10 @@ class CharacterView extends StatelessWidget {
             children: [
               Align(
                 alignment: Alignment.bottomCenter,
-                child: ClipPath(
-                  clipper: CharacterCardBackgroundClipper(),
-                  child: Hero(
-                    tag: "background-${character.id}",
+                child: Hero(
+                  tag: "background-${character.id}",
+                  child: ClipPath(
+                    clipper: CharacterCardBackgroundClipper(),
                     child: Container(
                       height: 0.55 * MediaQuery.of(context).size.height,
                       width: 0.9 * MediaQuery.of(context).size.width,
@@ -91,7 +91,7 @@ class CharacterView extends StatelessWidget {
                     ),
                   ],
                 ),
-              )
+              ),
             ],
           );
         },

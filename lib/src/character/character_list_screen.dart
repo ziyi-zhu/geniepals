@@ -1,22 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:geniepals/src/character/character_view.dart';
+import 'package:geniepals/src/character/character_widget.dart';
 
 import '../settings/settings_view.dart';
 import 'character.dart';
 
 /// Displays a list of SampleItems.
-class CharacterListView extends StatefulWidget {
-  const CharacterListView({super.key, required this.characters});
+class CharacterListScreen extends StatefulWidget {
+  const CharacterListScreen({super.key, required this.characters});
 
   static const routeName = '/';
 
   final List<Character> characters;
 
   @override
-  State<CharacterListView> createState() => _CharacterListViewState();
+  State<CharacterListScreen> createState() => _CharacterListScreenState();
 }
 
-class _CharacterListViewState extends State<CharacterListView> {
+class _CharacterListScreenState extends State<CharacterListScreen> {
   late PageController _pageController;
   int currentPage = 0;
 
@@ -93,7 +93,7 @@ class _CharacterListViewState extends State<CharacterListView> {
                   controller: _pageController,
                   children: [
                     for (var i = 0; i < characters.length; i++)
-                      CharacterView(
+                      CharacterWidget(
                         character: widget.characters[i],
                         pageController: _pageController,
                         currentPage: i,
