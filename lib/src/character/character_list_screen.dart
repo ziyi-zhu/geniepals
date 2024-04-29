@@ -59,50 +59,47 @@ class _CharacterListScreenState extends State<CharacterListScreen> {
         // In contrast to the default ListView constructor, which requires
         // building all Widgets up front, the ListView.builder constructor lazily
         // builds Widgets as they’re scrolled into view.
-        body: Padding(
-          padding: const EdgeInsets.only(bottom: 32.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Padding(
-                padding:
-                    const EdgeInsets.symmetric(vertical: 8.0, horizontal: 32.0),
-                child: RichText(
-                  text: TextSpan(
-                    children: [
-                      TextSpan(
-                          text: "GeniePals",
-                          style: Theme.of(context)
-                              .textTheme
-                              .displayLarge
-                              ?.copyWith(fontWeight: FontWeight.w600)),
-                      const TextSpan(text: "\n"),
-                      TextSpan(
-                          text: "Characters",
-                          style: Theme.of(context).textTheme.displayMedium)
-                    ],
-                  ),
-                ),
-              ),
-              Expanded(
-                child: PageView(
-                  // Providing a restorationId allows the ListView to restore the
-                  // scroll position when a user leaves and returns to the app after it
-                  // has been killed while running in the background.
-                  restorationId: "characterListView",
-                  controller: _pageController,
+        body: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Padding(
+              padding:
+                  const EdgeInsets.symmetric(vertical: 8.0, horizontal: 32.0),
+              child: RichText(
+                text: TextSpan(
                   children: [
-                    for (var i = 0; i < characters.length; i++)
-                      CharacterWidget(
-                        character: widget.characters[i],
-                        pageController: _pageController,
-                        currentPage: i,
-                      ),
+                    TextSpan(
+                        text: "GeniePals",
+                        style: Theme.of(context)
+                            .textTheme
+                            .displayLarge
+                            ?.copyWith(fontWeight: FontWeight.w600)),
+                    const TextSpan(text: "\n"),
+                    TextSpan(
+                        text: "Characters",
+                        style: Theme.of(context).textTheme.displayMedium)
                   ],
                 ),
               ),
-            ],
-          ),
+            ),
+            Expanded(
+              child: PageView(
+                // Providing a restorationId allows the ListView to restore the
+                // scroll position when a user leaves and returns to the app after it
+                // has been killed while running in the background.
+                restorationId: "characterListView",
+                controller: _pageController,
+                children: [
+                  for (var i = 0; i < characters.length; i++)
+                    CharacterWidget(
+                      character: widget.characters[i],
+                      pageController: _pageController,
+                      currentPage: i,
+                    ),
+                ],
+              ),
+            ),
+          ],
         ));
   }
 }

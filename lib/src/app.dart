@@ -3,6 +3,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:geniepals/src/character/character.dart';
 import 'package:geniepals/src/chat/chat_provider.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 import 'character/character_chat_screen.dart';
@@ -77,13 +78,15 @@ class _GeniePalsAppState extends State<GeniePalsApp> {
             // preferred ThemeMode (light, dark, or system default) from the
             // SettingsController to display the correct theme.
             theme: ThemeData(
-                primaryColor: const Color(0xFF2D2D44),
-                brightness: Brightness.light,
-                fontFamily: "WorkSans"),
+              primaryColor: const Color(0xFF2D2D44),
+              brightness: Brightness.light,
+              fontFamily: GoogleFonts.workSans().fontFamily,
+            ),
             darkTheme: ThemeData(
-                primaryColor: const Color(0xFF1E1E2C),
-                brightness: Brightness.dark,
-                fontFamily: "WorkSans"),
+              primaryColor: const Color(0xFF1E1E2C),
+              brightness: Brightness.dark,
+              fontFamily: GoogleFonts.workSans().fontFamily,
+            ),
             themeMode: widget.settingsController.themeMode,
 
             // Define a function to handle named routes in order to support

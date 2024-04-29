@@ -1,8 +1,11 @@
 import 'package:after_layout/after_layout.dart';
 import 'package:flutter/material.dart';
 import 'package:geniepals/src/character/character.dart';
+import 'package:geniepals/src/character/character_background_widget.dart';
 import 'package:geniepals/src/chat/chat_provider.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:provider/provider.dart';
+import 'package:rive/rive.dart';
 
 /// Displays detailed information about a SampleItem.
 class CharacterChatScreen extends StatefulWidget {
@@ -20,14 +23,23 @@ class _CharacterChatScreenState extends State<CharacterChatScreen>
   double _bottomSheetPosition = -330;
   bool _isCollapsed = false;
 
+  SMITrigger? _bump;
+
+  void _onRiveInit(Artboard artboard) {
+    final controller = StateMachineController.fromArtboard(artboard, 'Chat');
+    artboard.addController(controller!);
+    _bump = controller.findInput<bool>('success') as SMITrigger;
+  }
+
+  void _hitBump() => _bump?.fire();
+
   @override
   Widget build(BuildContext context) {
     ChatProvider chatProvider = Provider.of<ChatProvider>(context);
 
     if (chatProvider.character == null ||
         chatProvider.character != widget.character) {
-      chatProvider.character = widget.character;
-      chatProvider.startNewChat();
+      chatProvider.changeCharacter(widget.character);
     }
 
     return Scaffold(
@@ -36,68 +48,77 @@ class _CharacterChatScreenState extends State<CharacterChatScreen>
         children: [
           Hero(
             tag: "background-${widget.character.id}",
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: widget.character.colors,
-                  begin: Alignment.topRight,
-                  end: Alignment.bottomLeft,
-                ),
-              ),
+            child: CharacterBackgroundWidget(colors: widget.character.colors),
+          ),
+          Hero(
+            tag: "image-${widget.character.id}",
+            child: RiveAnimation.asset(
+              widget.character.animationPath,
+              onInit: _onRiveInit,
+              fit: BoxFit.cover,
+              alignment: Alignment.bottomCenter,
             ),
           ),
-          GestureDetector(
-            onTapDown: (details) => _onTapDown(details, chatProvider),
-            onTapUp: (details) => _onTapUp(details, chatProvider),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                AnimatedOpacity(
-                  // If the widget is visible, animate to 0.0 (invisible).
-                  // If the widget is hidden, animate to 1.0 (fully visible).
-                  opacity: _isCollapsed ? 1.0 : 0.0,
-                  duration: const Duration(milliseconds: 500),
+          (chatProvider.isProcessing)
+              ? Padding(
+                  padding: const EdgeInsets.only(bottom: 120),
+                  child: Align(
+                    alignment: Alignment.bottomCenter,
+                    child: LoadingAnimationWidget.staggeredDotsWave(
+                      color: Colors.white.withOpacity(0.8),
+                      size: 64.0,
+                    ),
+                  ),
+                )
+              : GestureDetector(
+                  onTapDown: (details) => _onTapDown(details, chatProvider),
+                  onTapUp: (details) => _onTapUp(details, chatProvider),
                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      Text(
-                        chatProvider.isPermissionGranted
-                            ? (chatProvider.isListening
-                                ? "Listening..."
-                                : "Hold and start speaking")
-                            : "Enable microphone access",
-                        style: Theme.of(context)
-                            .textTheme
-                            .headlineSmall
-                            ?.copyWith(
+                      AnimatedOpacity(
+                        // If the widget is visible, animate to 0.0 (invisible).
+                        // If the widget is hidden, animate to 1.0 (fully visible).
+                        opacity: _isCollapsed ? 1.0 : 0.0,
+                        duration: const Duration(milliseconds: 500),
+                        child: Column(
+                          children: [
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 16.0),
+                              child: Text(
+                                chatProvider.isPermissionGranted
+                                    ? (chatProvider.isListening
+                                        ? "Listening..."
+                                        : "Hold and start speaking")
+                                    : "Enable microphone access",
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .headlineSmall
+                                    ?.copyWith(
+                                        color: Colors.white.withOpacity(0.8),
+                                        fontWeight: FontWeight.w600),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 120),
+                              child: Icon(
+                                chatProvider.isPermissionGranted
+                                    ? (chatProvider.isListening
+                                        ? Icons.mic
+                                        : Icons.mic_none)
+                                    : Icons.mic_off,
+                                size: 40,
                                 color: Colors.white.withOpacity(0.8),
-                                fontWeight: FontWeight.w600),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Icon(
-                          chatProvider.isPermissionGranted
-                              ? (chatProvider.isListening
-                                  ? Icons.mic
-                                  : Icons.mic_none)
-                              : Icons.mic_off,
-                          size: 40,
-                          color: Colors.white.withOpacity(0.8),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
                   ),
                 ),
-                Hero(
-                  tag: "image-${widget.character.id}",
-                  child: Image.asset(
-                    widget.character.imagePath,
-                    height: MediaQuery.of(context).size.height * 0.55,
-                  ),
-                ),
-              ],
-            ),
-          ),
           Padding(
             padding: const EdgeInsets.only(top: 48.0, left: 16.0),
             child: Align(
@@ -119,48 +140,48 @@ class _CharacterChatScreenState extends State<CharacterChatScreen>
               ),
             ),
           ),
-          AnimatedPositioned(
-            duration: const Duration(milliseconds: 500),
-            curve: Curves.decelerate,
-            bottom: _bottomSheetPosition,
-            left: 0,
-            right: 0,
-            child: Container(
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.background,
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(40),
-                  topRight: Radius.circular(40),
-                ),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  InkWell(
-                    onTap: _isCollapsed
-                        ? _expandBottomSheet
-                        : _collapseBottomSheet,
-                    child: Container(
-                      alignment: Alignment.centerLeft,
-                      padding: const EdgeInsets.symmetric(horizontal: 32),
-                      height: 80,
-                      child: Text(
-                        "Memories",
-                        style: Theme.of(context)
-                            .textTheme
-                            .headlineSmall
-                            ?.copyWith(fontWeight: FontWeight.w600),
-                      ),
-                    ),
-                  ),
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: _memoriesWidget(),
-                  ),
-                ],
-              ),
-            ),
-          ),
+          // AnimatedPositioned(
+          //   duration: const Duration(milliseconds: 500),
+          //   curve: Curves.decelerate,
+          //   bottom: _bottomSheetPosition,
+          //   left: 0,
+          //   right: 0,
+          //   child: Container(
+          //     decoration: BoxDecoration(
+          //       color: Theme.of(context).colorScheme.background,
+          //       borderRadius: const BorderRadius.only(
+          //         topLeft: Radius.circular(40),
+          //         topRight: Radius.circular(40),
+          //       ),
+          //     ),
+          //     child: Column(
+          //       crossAxisAlignment: CrossAxisAlignment.start,
+          //       children: [
+          //         InkWell(
+          //           onTap: _isCollapsed
+          //               ? _expandBottomSheet
+          //               : _collapseBottomSheet,
+          //           child: Container(
+          //             alignment: Alignment.centerLeft,
+          //             padding: const EdgeInsets.symmetric(horizontal: 32),
+          //             height: 80,
+          //             child: Text(
+          //               "Memories",
+          //               style: Theme.of(context)
+          //                   .textTheme
+          //                   .headlineSmall
+          //                   ?.copyWith(fontWeight: FontWeight.w600),
+          //             ),
+          //           ),
+          //         ),
+          //         SingleChildScrollView(
+          //           scrollDirection: Axis.horizontal,
+          //           child: _memoriesWidget(),
+          //         ),
+          //       ],
+          //     ),
+          //   ),
+          // ),
         ],
       ),
     );
@@ -239,7 +260,7 @@ class _CharacterChatScreenState extends State<CharacterChatScreen>
     if (!_isCollapsed) {
       _collapseBottomSheet();
     } else {
-      chatProvider.startListening();
+      chatProvider.startListening(onSuccess: () => _hitBump());
     }
   }
 

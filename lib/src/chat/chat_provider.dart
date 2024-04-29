@@ -1,7 +1,9 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:geniepals/src/character/character.dart';
+import 'package:geniepals/src/chat/eleven_labs_client.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:speech_to_text/speech_to_text.dart';
@@ -14,15 +16,17 @@ class ChatProvider with ChangeNotifier {
   final speechToText = SpeechToText();
   final GenerativeModel model = GenerativeModel(
     model: 'gemini-1.0-pro',
-    apiKey: 'AIzaSyCFx3gEeGaDPHU0P2cjTuC7sswvkf3uBSA',
+    apiKey: dotenv.env['GOOGLE_API_KEY']!,
   );
 
   late ChatSession chat;
   Character? character;
+  ElevenLabsClient? elevenLabsClient;
 
   FlutterTts flutterTts = FlutterTts();
 
   String _lastWords = '';
+  bool isProcessing = false;
 
   final List<Permission> _requiredPermissions = [
     Permission.microphone,
@@ -36,6 +40,15 @@ class ChatProvider with ChangeNotifier {
     if (isPermissionGranted) {
       speechToText.initialize();
     }
+  }
+
+  void changeCharacter(Character newCharacter) {
+    character = newCharacter;
+    elevenLabsClient = ElevenLabsClient(
+      apiKey: dotenv.env['ELEVEN_LABS_API_KEY']!,
+      voiceId: newCharacter.voiceId,
+    );
+    startNewChat();
   }
 
   void startNewChat() {
@@ -56,14 +69,21 @@ class ChatProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future{void startListening() async {
+  Future<void> startListening({required Function onSuccess}) async {
     if (!isListening) {
       flutterTts.stop();
       await speechToText.listen(
-        onResult: (result) {
+        onResult: (result) async {
           if (result.finalResult) {
             _lastWords = result.recognizedWords;
-            processLastWords();
+            isProcessing = true;
+            notifyListeners();
+
+            await processLastWords();
+
+            isProcessing = false;
+            notifyListeners();
+            onSuccess();
           }
         },
       );
@@ -80,15 +100,15 @@ class ChatProvider with ChangeNotifier {
       player.play(AssetSource('audio/multi-pop.mp3'));
     }
     notifyListeners();
-    return null;
   }
 
-  void processLastWords() async {
+  Future<void> processLastWords() async {
     print(_lastWords);
     final content = Content.text(_lastWords);
     final response = await chat.sendMessage(content);
 
     print(response.text);
-    flutterTts.speak(response.text!);
+    // flutterTts.speak(response.text!);
+    await elevenLabsClient!.speak(response.text!);
   }
 }

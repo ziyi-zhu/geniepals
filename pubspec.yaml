@@ -12,13 +12,20 @@ environment:
 dependencies:
   after_layout: ^1.2.0
   audioplayers: ^6.0.0
+  cupertino_icons: ^1.0.8
   flutter:
     sdk: flutter
+  flutter_dotenv: ^5.1.0
   flutter_launcher_icons: ^0.13.1
   flutter_localizations:
     sdk: flutter
+  flutter_settings_ui: ^3.0.1
   flutter_tts: ^4.0.2
+  google_fonts: ^6.2.1
   google_generative_ai: ^0.3.1
+  http: ^1.2.1
+  just_audio: ^0.9.37
+  loading_animation_widget: ^1.2.1
   permission_handler: ^11.3.1
   provider: ^6.1.2
   rive: ^0.13.2
@@ -47,6 +54,8 @@ flutter:
   generate: true
   
   assets:
+    - .env
+    - assets/character.riv
     - assets/images/
     - assets/audio/
 
@@ -57,17 +66,6 @@ flutter:
 
   # For details regarding adding assets from package dependencies, see
   # https://flutter.dev/assets-and-images/#from-packages
-
-  fonts:
-    - family: WorkSans
-      fonts:
-        - asset: assets/fonts/WorkSans-Regular.ttf
-        - asset: assets/fonts/WorkSans-Medium.ttf
-          weight: 500
-        - asset: assets/fonts/WorkSans-SemiBold.ttf
-          weight: 600
-        - asset: assets/fonts/WorkSans-Bold.ttf
-          weight: 700
 
   # To add custom fonts to your application, add a fonts section here,
   # in this "flutter" section. Each entry in this list should have a
