@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:geniepals/src/character/character.dart';
 import 'package:geniepals/src/character/character_background_widget.dart';
 import 'package:geniepals/src/chat/chat_provider.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:provider/provider.dart';
 import 'package:rive/rive.dart';
@@ -23,15 +24,20 @@ class _CharacterChatScreenState extends State<CharacterChatScreen>
   double _bottomSheetPosition = -330;
   bool _isCollapsed = false;
 
-  SMITrigger? _bump;
+  SMITrigger? _successTrigger;
+  SMITrigger? _failTrigger;
+
+  String? _displayText;
 
   void _onRiveInit(Artboard artboard) {
     final controller = StateMachineController.fromArtboard(artboard, 'Chat');
     artboard.addController(controller!);
-    _bump = controller.findInput<bool>('success') as SMITrigger;
+    _successTrigger = controller.findInput<bool>('success') as SMITrigger;
+    _failTrigger = controller.findInput<bool>('fail') as SMITrigger;
   }
 
-  void _hitBump() => _bump?.fire();
+  void _triggerSuccess() => _successTrigger?.fire();
+  void _triggerFail() => _failTrigger?.fire();
 
   @override
   Widget build(BuildContext context) {
@@ -50,6 +56,24 @@ class _CharacterChatScreenState extends State<CharacterChatScreen>
             tag: "background-${widget.character.id}",
             child: CharacterBackgroundWidget(colors: widget.character.colors),
           ),
+          if (_displayText != null)
+            Padding(
+              padding:
+                  const EdgeInsets.symmetric(vertical: 120.0, horizontal: 16.0),
+              child: Align(
+                alignment: Alignment.topCenter,
+                child: Text(
+                  _displayText!,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.bangers(
+                    textStyle: TextStyle(
+                      fontSize: 50.0,
+                      color: Colors.white.withOpacity(0.9),
+                    ),
+                  ),
+                ),
+              ),
+            ),
           Hero(
             tag: "image-${widget.character.id}",
             child: RiveAnimation.asset(
@@ -61,7 +85,7 @@ class _CharacterChatScreenState extends State<CharacterChatScreen>
           ),
           (chatProvider.isProcessing)
               ? Padding(
-                  padding: const EdgeInsets.only(bottom: 120),
+                  padding: const EdgeInsets.only(bottom: 120.0),
                   child: Align(
                     alignment: Alignment.bottomCenter,
                     child: LoadingAnimationWidget.staggeredDotsWave(
@@ -260,7 +284,16 @@ class _CharacterChatScreenState extends State<CharacterChatScreen>
     if (!_isCollapsed) {
       _collapseBottomSheet();
     } else {
-      chatProvider.startListening(onSuccess: () => _hitBump());
+      chatProvider.startListening(onSpeechStart: (response) {
+        print(response.speech);
+        print(response.text);
+        setState(() {
+          _displayText = response.text;
+        });
+        response.sentiment == "positive" ? _triggerSuccess() : _triggerFail();
+      }, onSpeechEnd: () {
+        print("end.");
+      });
     }
   }
 

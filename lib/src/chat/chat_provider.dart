@@ -1,9 +1,12 @@
+import 'dart:convert';
+
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:geniepals/src/character/character.dart';
 import 'package:geniepals/src/chat/eleven_labs_client.dart';
+import 'package:geniepals/src/chat/prompt.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:speech_to_text/speech_to_text.dart';
@@ -52,12 +55,21 @@ class ChatProvider with ChangeNotifier {
   }
 
   void startNewChat() {
+    print(character!.instruction);
     chat = model.startChat(history: [
       Content.text(character!.instruction),
       Content.model([
         TextPart(
-            'Hello! I am ${character!.name}, your virtual companion. How can I help you today?')
-      ])
+          jsonEncode(
+            ChatResponse(
+              speech:
+                  "Hello! I am ${character!.name}, your virtual companion. How can I help you today?",
+              sentiment: "positive",
+            ).toJson(),
+          ),
+        )
+      ]),
+      ...chatHistory,
     ]);
   }
 
@@ -69,7 +81,8 @@ class ChatProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> startListening({required Function onSuccess}) async {
+  Future<void> startListening(
+      {Function(ChatResponse)? onSpeechStart, Function? onSpeechEnd}) async {
     if (!isListening) {
       flutterTts.stop();
       await speechToText.listen(
@@ -79,11 +92,23 @@ class ChatProvider with ChangeNotifier {
             isProcessing = true;
             notifyListeners();
 
-            await processLastWords();
+            final response = await processLastWords();
+            ChatResponse chatResponse = ChatResponse.fromJson(response);
 
-            isProcessing = false;
-            notifyListeners();
-            onSuccess();
+            // flutterTts.speak(test);
+            elevenLabsClient!.speak(
+              text: chatResponse.speech,
+              onSpeechStart: () {
+                isProcessing = true;
+                notifyListeners();
+                onSpeechStart?.call(chatResponse);
+              },
+              onSpeechEnd: () {
+                isProcessing = false;
+                notifyListeners();
+                onSpeechEnd?.call();
+              },
+            );
           }
         },
       );
@@ -102,13 +127,33 @@ class ChatProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> processLastWords() async {
+  Future<Map<String, dynamic>> processLastWords() async {
     print(_lastWords);
     final content = Content.text(_lastWords);
     final response = await chat.sendMessage(content);
-
     print(response.text);
-    // flutterTts.speak(response.text!);
-    await elevenLabsClient!.speak(response.text!);
+    return jsonDecode(response.text!) as Map<String, dynamic>;
+  }
+}
+
+class ChatResponse {
+  late String speech;
+  late String sentiment;
+  String? text;
+
+  ChatResponse({required this.speech, required this.sentiment, this.text});
+
+  ChatResponse.fromJson(Map<String, dynamic> json) {
+    speech = json["speech"] ?? "Oops! I didn't catch that.";
+    sentiment = json["sentiment"] ?? "positive";
+    text = json['text'];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['speech'] = speech;
+    data['sentiment'] = sentiment;
+    if (text != null) data['text'] = text;
+    return data;
   }
 }

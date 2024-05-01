@@ -10,12 +10,18 @@ class ElevenLabsClient {
 
   ElevenLabsClient({required this.apiKey, required this.voiceId});
 
-  Future speak(String text) async {
+  Future speak(
+      {required String text,
+      Function? onSpeechStart,
+      Function? onSpeechEnd}) async {
     try {
       final player = AudioPlayer();
       final bytes = await _fetch(text);
-      player.setAudioSource(AudioBytesSource(bytes));
-      player.play();
+      await player.setAudioSource(AudioBytesSource(bytes));
+
+      onSpeechStart?.call();
+      await player.play();
+      onSpeechEnd?.call();
     } catch (ex) {
       print('Error: $ex');
     }
