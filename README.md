@@ -18,11 +18,16 @@
    </p>
 </div>
 
-![Contributors](https://img.shields.io/github/contributors/ziyi-zhu/geniepals?color=dark-green) ![Issues](https://img.shields.io/github/issues/ziyi-zhu/geniepals) ![License](https://img.shields.io/badge/License-CC%20BY--ND%204.0-lightgrey.svg)
+![Contributors](https://img.shields.io/github/contributors/ziyi-zhu/geniepals?color=dark-green) ![Issues](https://img.shields.io/github/issues/ziyi-zhu/geniepals) ![License](https://img.shields.io/badge/License-CC%20BY--NC%204.0-lightgrey.svg)
 
 ## Table of Contents
 
 - [About The Project](#about-the-project)
+   - [Inspiration](#inspiration)
+   - [Learning Experience](#learning-experience)
+   - [Challenges Faced](#challenges-faced)
+   - [Conclusion](#conclusion)
+   - [Built With](#built-with)
 - [Getting Started](#getting-started)
    - [Assets](#assets)
    - [Localization](#localization)
@@ -33,6 +38,25 @@
 ## About The Project
 
 ![Screenshot](assets/images/banner.png)
+
+### Inspiration
+The catalyst for creating GeniePals was the remarkable exponential growth in Large Language Models (LLMs) and their capabilities. I noticed that despite the technological advances, there was a significant gap in interfaces that could seamlessly integrate human interaction with these powerful LLMs, particularly for children. Children's engagement with technology often lacks a purposeful and beneficial interaction. This observation sparked the idea to build an app that not only entertains but also educates and provides emotional support to kids, enhancing their daily welfare through an enriching companionship with AI.
+
+### Learning Experience
+Throughout the development of GeniePals, I delved deep into the intricacies of user experience, particularly focusing on how children interact with technology. The key learnings were around designing intuitive user interfaces that cater to the young mind, which is curious but easily distracted. This project taught me the importance of merging technical prowess with creative design to craft experiences that are both educational and engaging.
+
+### Building GeniePals
+GeniePals was built using Flutter, a versatile framework that allowed for rapid development and smooth, native performance across both Android and iOS platforms. For animations, I utilized Rive, which enabled me to create and control detailed animations that respond to user interactions—vital for keeping the interactions lively and engaging.
+
+The AI backbone of GeniePals is powered by Gemini, a robust LLM that offers a wide range of conversational capabilities suited for educational purposes. On-device speech recognition was implemented to ensure privacy and responsiveness, giving kids the ability to interact with their AI friends via voice. The spoken output of the AI is generated through the ElevenLabs API, which provides highly realistic voice synthesis, making the AI companions sound friendly and approachable.
+
+### Challenges Faced
+One of the primary challenges was ensuring that the interaction between children and the AI was safe and appropriate. Implementing filters and safeguards to prevent any harmful content while maintaining a conversational flow was a complex task that required thorough testing and iteration.
+
+Another significant challenge was designing AI responses to be empathetic and supportive, mirroring human-like emotions through text, speech, and animation. Integrating these elements to work synchronously while keeping app performance optimal was a demanding aspect of the project.
+
+### Conclusion
+The journey of creating GeniePals has been immensely fulfilling. From conceptualization to execution, each phase of the project brought its own set of challenges and learnings. The final product not only bridges the gap between human interaction and LLMs for children but also enriches their daily lives by offering a magical AI friend who can chat, play, and learn with them. Watching children interact with GeniePals and hearing their laughter and excitement has been the greatest reward, affirming the impact of combining technology with compassion and creativity.
 
 ### Built With
 
@@ -63,9 +87,9 @@ To support additional languages, please visit the tutorial on [Internationalizin
 
 ## License
 
-This work is licensed under a [Creative Commons Attribution-NoDerivs 4.0 International License](https://creativecommons.org/licenses/by-nd/4.0/).
+This work is licensed under a [Creative Commons Attribution-NonCommercial 4.0 International License](https://creativecommons.org/licenses/by-nc/4.0/).
 
-[![CC BY-ND 4.0](https://licensebuttons.net/l/by-nd/4.0/88x31.png)](https://creativecommons.org/licenses/by-nd/4.0/)
+[![CC BY-ND 4.0](https://licensebuttons.net/l/by-nc/4.0/88x31.png)](https://creativecommons.org/licenses/by-nc/4.0/)
 
 ## Contact
 
