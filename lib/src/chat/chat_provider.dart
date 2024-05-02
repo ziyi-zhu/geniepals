@@ -6,7 +6,6 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:geniepals/src/character/character.dart';
 import 'package:geniepals/src/chat/eleven_labs_client.dart';
-import 'package:geniepals/src/chat/prompt.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:speech_to_text/speech_to_text.dart';
@@ -20,6 +19,10 @@ class ChatProvider with ChangeNotifier {
   final GenerativeModel model = GenerativeModel(
     model: 'gemini-1.0-pro',
     apiKey: dotenv.env['GOOGLE_API_KEY']!,
+    safetySettings: [
+      SafetySetting(HarmCategory.dangerousContent, HarmBlockThreshold.medium),
+      SafetySetting(HarmCategory.hateSpeech, HarmBlockThreshold.high),
+    ],
   );
 
   late ChatSession chat;
@@ -55,7 +58,6 @@ class ChatProvider with ChangeNotifier {
   }
 
   void startNewChat() {
-    print(character!.instruction);
     chat = model.startChat(history: [
       Content.text(character!.instruction),
       Content.model([
@@ -69,7 +71,7 @@ class ChatProvider with ChangeNotifier {
           ),
         )
       ]),
-      ...chatHistory,
+      ...character!.chatHistory,
     ]);
   }
 
@@ -92,8 +94,14 @@ class ChatProvider with ChangeNotifier {
             isProcessing = true;
             notifyListeners();
 
-            final response = await processLastWords();
-            ChatResponse chatResponse = ChatResponse.fromJson(response);
+            ChatResponse chatResponse;
+            try {
+              final response = await processLastWords();
+              chatResponse = ChatResponse.fromJson(response);
+            } catch (ex) {
+              print('Error: $ex');
+              chatResponse = ChatResponse.failed();
+            }
 
             // flutterTts.speak(test);
             elevenLabsClient!.speak(
@@ -155,5 +163,10 @@ class ChatResponse {
     data['sentiment'] = sentiment;
     if (text != null) data['text'] = text;
     return data;
+  }
+
+  ChatResponse.failed() {
+    speech = "Oops! I didn't catch that.";
+    sentiment = "positive";
   }
 }
